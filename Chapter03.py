@@ -13,9 +13,9 @@ sns.set()       # sns.set()을 하면 그래프 디자인이 바뀜
 from matplotlib import pyplot as plt        # 그래프를 그리기 위한 라이브러리
 
 pd.set_option("display.precision", 3)       # 표시 자릿수 지정 : 소수점 이하 자릿수 3
-%precision 3                                # 표시자릿수 지정
+# %precision 3                                # 표시자릿수 지정
 
-%matplotlib inline                          # 그래프를 주피터 노트북에 그리기 위한 설정
+# %matplotlib inline                          # 그래프를 주피터 노트북에 그리기 위한 설정
 
 
 
@@ -240,7 +240,7 @@ pd.set_option("display.precision", 3)
 # 그래프를 그리기 위한 라이브러리
 from matplotlib import pyplot as plt
 # 그래프를 주피터 노트북에 그리기 위한 설정
-%matplotlib inline
+# %matplotlib inline
 
 
 # p133  3.3.3   pyplot을 이용한 꺾은선 그래프
@@ -258,7 +258,7 @@ plt.pause(1)
 # p134  3.3.4   seaborn과 pyplot을 이용한 꺾은선 그래프
 import seaborn as sns
 sns.set()       # sns.set()을 하면 그래프 디자인이 바뀜
-%matplotlib inline
+# %matplotlib inline
 plt.plot(x, y, color = 'black')
 plt.title("lineplot seaborn")
 plt.xlabel("x")
@@ -398,9 +398,9 @@ from matplotlib import pyplot as plt
 import seaborn as sns
 sns.set()
 # 표시자릿수 지정
-%precision 3
+# %precision 3
 # 그래프를 주피터 노트북에 그리기 위한 설정
-%matplotlib inline
+# %matplotlib inline
 
 
 # p146  3.4.2   표본을 얻는 프로세스
