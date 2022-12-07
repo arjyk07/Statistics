@@ -474,7 +474,7 @@ sns.distplot(fish_100000, kde = False, norm_hist = True, color = 'black')
 plt.plot(x,
          stats.norm.pdf(x = x, loc = 4, scale = 0.8),
          color = 'black')
- 
+
 
 # p154  3.4.9   표본을 얻는 절차의 추상화
 # 위의 모집단 분포는 평균 4, 분산 0.64(표준편차 0.8)인 정규분포라고 볼 수 있다.
