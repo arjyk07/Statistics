@@ -490,20 +490,224 @@ sp.mean(sampling_norm)      # 표본평균
 # p156  3.4.11  모집단분포를 정규분포로 가정해도 좋은가
 
 
+### p157    3.5     표본 통계량 성질
+
+# p157  3.5.1   시행
+"""
+    시행 : 1회의 조사를 수행
+    시행횟수 : 몇 번이고 시행을 반복하는 게 가능한 경우 반복한 횟수
+"""
 
 
+# p157  3.5.2   표본분포
+"""
+    표본분포 : 표본의 통계량이 따르는 확률분포
+    표본추출 시뮬레이션 10,000회 → 10,000개 표본(샘플사이즈 x) → 표본평균 10,000개
+    → 10,000개의 표본평균이 따르는 확률분포가 표본분포
+    <p158 그림 참고>
+"""
 
 
+# p158  3.5.3   라이브러리 임포트
+# 수치계산에 사용하는 라이브러리
+import numpy as np
+import pandas as pd
+import scipy as sp
+from scipy import stats
+# 그래프를 그리기 위한 라이브러리
+from matplotlib import pyplot as plt
+import seaborn as sns
+sns.set()
+# 표시 자리수 지정
+# %precision 3
+# 그래프를 주피터 노트북에 그리기 위한 설정
+# %matplotlib inline
+
+population = stats.norm(loc = 4, scale = 0.8)   # 평균 4, 표준편차 0.8(분산 0.64)인 정규분포
 
 
+# p159  3.5.4   표본평균을 여러 번 계산하기
+sample_mean_array = np.zeros(10000)     # 표본평균 10,000개 얻기, 길이가 10,000개인 배열
+np.random.seed(1)       # 이 배열에 10,000개의 표본평균 저장
+for i in range(0, 10000):
+    sample = population.rvs(size = 10)
+    sample_mean_array[i] = sp.mean(sample)
 
 
+# p160  3.5.5   표본평균의 평균값은 모평균에 가깝다
+sp.mean(sample_mean_array)      # 표본평균의 평균
+sp.std(sample_mean_array)       # 표본평균의 표준편차
+sns.distplot(sample_mean_array, color = "black")        # 표본평균의 히스토그램
 
 
+# p161  3.5.6   샘플사이즈가 크면 표본평균은 모평균에 가까워진다
+"""
+    대상 : 표본평균
+    변화시키는 것 : 샘플사이즈
+    알고 싶은 것 : 샘플사이즈가 커질수록 표본평균은 모평균에 가까워지는가?
+"""
+size_array = np.arange(start = 10, stop = 100100, step = 100)   # 10 ~ 100,010까지 100단위 변화하는 샘플사이즈
+size_array
+
+sample_mean_array_size = np.zeros(len(size_array))  # 표본평균을 저장할 변수
+# 시뮬레이션 실행(표본평균을 구하는 시행을 샘플사이즈를 변화시켜가면서 몇 번이고 실행)
+np.random.seed(1)
+for i in range(0, len(size_array)):
+    sample = population.rvs(size = size_array[i])
+    sample_mean_array_size[i] = sp.mean(sample)
+
+# 가로축이 샘플사이즈, 세로축이 표본평균인 그래프 그리기
+plt.plot(size_array, sample_mean_array_size, color = "black")
+plt.xlabel("sample size")
+plt.ylabel("sample mean")
+# → 샘플사이즈가 커질수록 표본평균이 모평균(4)에 가까워진다
 
 
+# p163  3.5.7   표본평균을 몇 번이고 계산하는 함수 만들기
+def calc_sample_mean(size, n_trial):
+    sample_mean_array = np.zeros(n_trial)
+    for i in range(0, n_trial):
+        sample = population.rvs(size = size)
+        sample_mean_array[i] = sp.mean(sample)
+    return(sample_mean_array)
+
+np.random.seed(1)
+sp.mean(calc_sample_mean(size = 10, n_trial = 10000))       # 4.004202422791747
 
 
+# p163  3.5.8   샘플사이즈를 바꿨을 때 표본평균의 분산
+# 샘플사이즈를 바꿨을 때 표본평균의 분포를 바이올린플롯을 이용해서 확인
+np.random.seed(1)
+# 샘플사이즈 10
+size_10 = calc_sample_mean(size = 10, n_trial = 10000)
+size_10_df = pd.DataFrame({
+    "sample_mean"   : size_10,
+    "size"          : np.tile("size 10", 10000)})
+# 샘플사이즈 20
+size_20 = calc_sample_mean(size = 20, n_trial = 10000)
+size_20_df = pd.DataFrame({
+    "sample_mean"   : size_20,
+    "size"          : np.tile("size 20", 10000)})
+# 샘플사이즈 30
+size_30 = calc_sample_mean(size = 30, n_trial = 10000)
+size_30_df = pd.DataFrame({
+    "sample_mean"   : size_30,
+    "size"          : np.tile("size 30", 10000)})
+# 종합
+sim_result = pd.concat([size_10_df, size_20_df, size_30_df])
+# 결과 표시
+print(sim_result.head())
+
+sns.violinplot(x = "size", y = "sample_mean",
+                data = sim_result, color = 'gray')  # 바이올린 플롯
+# → 샘플사이즈가 커질수록 표본평균이 흩어지는 정도가 작아져서 모평균(4)에 가깝게 모이는 것을 알 수 있음
+
+
+# p165  3.5.9   표본평균의 표준편차는 모집단보다 작다
+"""
+    샘플사이즈가 커지면 표본평균의 흩어짐이 작아지는 현상을
+    표본평균의 표준편차를 샘플사이즈별로 살펴봄으로써 다시 한 번 확인해본다.
+    
+    대상 : 표본평균의 표준편차
+    변화시키는 것 : 샘플사이즈
+    알고 싶은 것 : 샘플사이즈가 커질수록 표본평균의 표준편차는 작아진다.
+                → 샘플사이즈가 커지면 표본평균은 보다 신뢰할 수 있는 값이 된다.
+"""
+size_array = np.arange(start = 2, stop = 102, step = 2)     # 2 ~ 100까지 2씩 차이 나게 샘플사이즈 준비
+size_array
+
+sample_mean_std_array = np.zeros(len(size_array))       # 표본평균의 표준편차를 저장할 변수 준비
+# 시뮬레이션 실행(시행횟수 100)
+np.random.seed(1)
+for i in range(0, len(size_array)):
+    sample_mean = calc_sample_mean(size = size_array[i], n_trial = 100)
+    sample_mean_std_array[i] = sp.std(sample_mean, ddof = 1)
+
+# 꺾은선그래프(가로축 = 샘플사이즈, 세로축 = 표본평균의 표준편차)
+plt.plot(size_array, sample_mean_std_array, color = "black")
+plt.xlabel("sample size")
+plt.ylabel("mean_std value")
+# → 샘플사이즈가 커질수록 표본평균의 표준편차가 작아짐.
+# → 샘플사이즈를 크게 하면 흩어짐이 적은 신뢰할 수 있는 표본평균을 얻을 수 있음.
+
+
+# p167  3.5.10  표준오차
+"""
+    표준오차(Standard error, SE) : 표본평균의 표준편차
+    = σ(표준편차) / N(샘플사이즈)
+    → 샘플사이즈가 클수록 표준오차는 작아진다.
+"""
+# 표준오차
+standard_error = 0.8 / np.sqrt(size_array)
+standard_error
+
+# 표준오차와 시뮬레이션 결과 비교(그래프)
+# 표준오차는 linestyle = 'dotted'로 지정해서 점선으로 그리기
+plt.plot(size_array, sample_mean_std_array, color = "black")        # 시뮬레이션 결과
+plt.plot(size_array, standard_error, color = "black", linestyle = "dotted")
+# → 시뮬레이션 결과와 표준오차의 값이 거의 일치함
+
+
+# p168  3.5.11  표준오차의 직관적인 설명
+"""
+    표본평균의 표준편차(표준오차) < 원래 데이터의 표준편차
+    [이유]
+        ex) 10명 정원의 엘리베이터 안 사람들의 체중 or 키 흩어짐 정도는
+            100명 정원의 비행기 안 사람들의 체중 or 키 흩어짐 정도보다 크다
+        → 샘플사이즈가 클수록 표본평균들이 모평균에서 떨어져있는 정도, 즉 흩어진 정도가 작아지게 됨
+"""
+
+
+# p169  3.5.12  표본분산의 평균값은 모분산과 차이가 있다
+# 표본분산을 대상으로 시뮬레이션
+# 표본분산을 10,000번 계산해서 표본분산의 평균값 구해보기
+sample_var_array = np.zeros(10000)      # 표본분산을 저장할 변수 준비
+# 시뮬레이션 실행(데이터 10개 골라서 표본분산을 구하는 시행 10,000번 반복)
+np.random.seed(1)
+for i in range(0, len(sample_var_array)):
+    sample = population.rvs(size = 10)
+    sample_var_array[i] = sp.var(sample, ddof = 0)
+
+sp.mean(sample_var_array)       # 표본분산의 평균값 : 0.5746886877332101
+# → 모분산은 0.8(표준편차)의 제곱인 0.64
+# → 하지만 표본분산의 평균값은 0.575로 분산이 과소평가됨
+
+
+# p169  3.5.13  불편분산을 사용하면 편향이 사라진다
+# 불편분산을 저장하는 변수
+unbias_var_array = np.zeros(10000)
+# 데이터를 10개 골라서 불편분산을 구하는 시행을 10,000번 반복
+np.random.seed(1)
+for i in range(0, len(unbias_var_array)):
+    sample = population.rvs(size = 10)
+    unbias_var_array[i] = sp.var(sample, ddof = 1)      # 불편분산
+# 불편분산의 평균값
+sp.mean(unbias_var_array)       # 0.6385429863702334
+# → 모분산은 0.8(표준편차)의 제곱인 0.64
+# → 불편분산의 평균값은 모분산이라고 간주해도 좋음
+
+
+# p170  3.5.14  샘플사이즈가 크면 불편분산은 모분산에 가까워진다
+"""
+    대상 : 불편분산
+    변화시키는 것 : 샘플사이즈
+    알고 싶은 것 : 샘플사이즈가 커지면 불편분산은 모분산에 가까워진다.
+"""
+size_array = np.arange(start = 10, stop = 100100, step = 100)   # 10 ~ 100010까지 100단위로 변화하는 샘플사이즈
+size_array
+
+unbias_var_array_size = np.zeros(len(size_array))   # 불편분산을 저장하는 변수
+# 시뮬레이션 실행
+np.random.seed(1)
+for i in range(0, len(size_array)):
+    sample = population.rvs(size = size_array[i])
+    unbias_var_array_size[i] = sp.var(sample, ddof = 1)
+
+# 꺾은선 그래프(가로축 = 샘플사이즈, 세로축 = 불편분산)
+plt.plot(size_array, unbias_var_array_size, color = "black")
+plt.xlabel("sample size")
+plt.ylabel("unbias var")
+# → 샘플사이즈가 커지면 커질수록 불편분산은 모분산(0.64)에 가까워짐
 
 
 
