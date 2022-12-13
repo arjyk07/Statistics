@@ -742,6 +742,381 @@ plt.ylabel("unbias var")
 """
 
 
+# p173  3.5.18  큰수의 법칙
+"""
+    큰수의 법칙 : 표본의 크기가 커지면 표본평균이 모평균에 가까워지는 방법을 표현한 법칙
+"""
+
+
+# p173  3.5.19  중심극한정리
+"""
+    중심극한정리 : 모집단분포가 무엇이든 간에 샘플사이즈가 커지면 확률변수의 합은 정규분포에 가까워짐
+"""
+# ex) 동전을 10,000번 던졌을 때, 앞이 나온 횟수의 분포 구하기
+# 샘플사이즈와 시행횟수
+n_size = 10000
+n_trial = 50000
+# 앞면이면 1, 뒷면이면 0으로 표시
+coin = np.array([0, 1])
+# 앞면이 나온 횟수
+count_coin = np.zeros(n_trial)
+# 동전을 n_size번 던지는 시행을 n_trial번 수행
+np.random.seed()
+for i in range(0, n_trial):
+    count_coin[i] = sp.sum(
+        np.random.choice(coin, size = n_size, replace = True)
+    )
+# 히스토그램 그리기
+sns.distplot(count_coin, color = "black")
+
+
+# p174  3.6 정규분포의 응용
+# p175  3.6.1   라이브러리 임포트
+# 수치 계산에 사용하는 라이브러리
+import numpy as np
+import pandas as pd
+import scipy as sp
+from scipy import stats
+# 그래프를 그리기 위한 라이브러리
+from matplotlib import pyplot as plt
+import seaborn as sns
+sns.set()
+# 표시자릿수 지정
+# %precision 3
+# 그래프를 주피터 노트북에 그리기 위한 설정
+# %matplotlib inline
+
+
+# p176  3.6.2   확률밀도
+sp.pi       # 원주율(π)
+sp.exp(1)       # 자연로그 e^x = exp(x), 즉 자연로그 e의 1승 = 2.718281828459045
+
+# 정규분포의 확률밀도 계산
+# ex) 평균 4, 분산 0.64(표준편차 0.8)인 정규분포에 대해 확률변수 3일 때의 확률밀도
+# 즉, N(3│4, 0.8^2)
+x = 3
+mu = 4
+sigma = 0.8
+1 / (sp.sqrt(2 * sp.pi * sigma**2)) * \
+    sp.exp(-((x - mu)**2) / (2 * sigma**2))
+
+# 위의 수식 간단히 계산
+stats.norm.pdf(loc = 4, scale = 0.8, x = 3)
+
+# 평균 4, 표준편차 0.8인 정규분포의 인스턴스 생성해서 pdf함수 호출
+norm_dist = stats.norm(loc = 4, scale = 0.8)
+norm_dist.pdf(x = 3)
+
+# 확률밀도 표시
+x_plot = np.arange(start = 1, stop = 7.1, step = 0.1)
+plt.plot(
+    x_plot,
+    stats.norm.pdf(x = x_plot, loc = 4, scale = 0.8),
+    color = "black"
+)
+
+
+# p177  3.6.3   표본이 어떤 값 이하가 되는 비율
+# 표본이 어떤 값 이하가 되는 비율 = (어떤 값 이하가 되는 데이터의 개수 / 샘플사이즈)
+
+# 모집단 분포 N(x│4, 0.8^2)인 모집단에서 표본추출 시뮬레이션 실행(샘플사이즈 100,000)
+np.random.seed(1)
+simulated_sample = stats.norm.rvs(
+    loc = 4, scale = 0.8, size = 100000)
+simulated_sample
+
+sp.sum(simulated_sample <= 3)       # 3 이하인 데이터 개수
+sp.sum(simulated_sample <= 3) / len(simulated_sample)   # 샘플사이즈로 나누면 약 10.4%
+
+
+# p178  3.6.4   누적분포함수
+"""
+    누적분포함수 or 분포함수 : F(X) = P(X<=x)    
+    누적분포함수는 stats.norm의 cdf 함수(Cumulative Distribution Function) 사용
+    → 데이터를 하나하나 세어보지 않고 적분을 이용해서 확률을 간단히 계산할 수 있는게
+      모집단분포를 정규분포라고 가정하는 것의 장점
+"""
+# 모집단 분포가 N(x│4, 0.8^2)일 때 확률분포에서 얻은 확률변수가 3 이하가 될 확률 계산
+stats.norm.cdf(loc = 4, scale = 0.8, x = 3)     # 0.10564977366685535, 약 10%
+
+# 정규분포는 평균에 대해 좌우대칭이므로 데이터가 평균값 이하가 될 확률은 50%
+stats.norm.cdf(loc = 4, scale = 0.8, x = 4)     # 0.5, 50%
+
+
+# p179  3.6.5   하측확률과 퍼센트포인트
+"""
+    하측확률 : 데이터가 어떤 값 이하가 될 확률
+    퍼센트포인트 : 어떤 확률이 될 기준치
+    
+    '확률변수 x가 N보다 낮을 확률은 M퍼센트다'
+    - N(변수)을 고정하고 M(확률)을 구하는 경우 이 때의 M이 하측확률
+    - M(확률)을 고정하고 N(변수)을 구하는 경우 이 때의 N이 퍼센트포인트
+    
+    퍼센트포인트 계산 → stats.norm의 ppf(percent point function) 함수 사용
+"""
+# 모집단 분포 N(x│4, 0.8^2)일 때 하측확률이 2.5%가 되는 퍼센트포인트
+stats.norm.ppf(loc = 4, scale = 0.8, q = 0.025)
+
+lower = stats.norm.cdf(loc = 4, scale = 0.8, x = 3)     # 확률변수의 값을 확률로 변환(3 이하가 될 확률)
+stats.norm.ppf(loc = 4, scale = 0.8, q = lower)     # 확률이 다시 확률변수의 값으로 돌아옴(ppf의 인자로 cdf함수의 결과 넣음)
+
+stats.norm.ppf(loc = 4, scale = 0.8, q = 0.5)   # 하측확률이 50%가 되는 퍼센트포인트, 4
+
+
+# p180  3.6.6   표준정규분포
+"""
+    표준정규분포 : 평균 0, 분산(표준편차)가 1인 정규분포 → N(x│0, 1)
+"""
+
+
+# p180  3.6.7   t값
+"""
+    t값 = (표본평균 - 모평균) / 표준오차        ※ 표준화 = (데이터 - 평균) / 표준편차
+"""
+
+
+# p181  3.6.8   t값의 표본분포
+# t값의 표본분포를 시뮬레이션으로 확인
+# 시뮬레이션 방법
+# 01 : 모집단 분포가 N(x│4, 0.8^2)인 모집단에서 표본추출 시뮬레이션(샘플사이즈 10)
+# 02 : 얻은 표본에서 표본평균 구하기
+# 03 : 얻은 표본에서 표준오차 구하기(표준오차는 표본평균의 표준오차)
+# 04 : t = (표본평균 - 모평균) / 표준오차
+# 05 : 10,000번 시행 반복
+
+# 난수 시드 설정
+np.random.seed(1)
+# t값을 저장할 변수 설정
+t_value_array = np.zeros(10000)
+# 정규분포 클래스의 인스턴스
+norm_dist = stats.norm(loc = 4, scale = 0.8)
+# 시뮬레이션 실행
+for i in range(0, 10000):
+    sample = norm_dist.rvs(size = 10)
+    sample_mean = sp.mean(sample)
+    sample_std = sp.std(sample, ddof = 1)               # 표준편차
+    sample_se = sample_std / sp.sqrt(len(sample))       # 표준오차 : 표준편차 / 루트 N
+    t_value_array[i] = (sample_mean - 4) / sample_se        # t값 : (표본평균 - 모평균) / 표준오차
+
+# 표준정규분포의 확률밀도 점선으로 그리기(linestyle = "dotted"로 지정)
+# stats.norm.pdf(x = x)로 하여 loc와 scale을 지정하지 않을 경우 표준정규분포가 됨
+# t값의 히스토그램
+sns.distplot(t_value_array, color = "black")
+# 표준정규분포의 확률밀도
+x = np.arange(start = -8, stop = 8.1, step = 0.1)
+plt.plot(x, stats.norm.pdf(x = x), color = "black", linestyle = "dotted")
+# → 불편성 만족 : 표본평균의 평균값은 모평균을 따름
+# → 때문에 '(표본평균 - 모평균) / 표준오차' 결과의 분포 중심이 0이 됨
+# 분포의 밑단이 넓어지고 있음. 분산이 1보다 크기 때문
+# 표본에서 계산한 표준오차로 나누었기 때문
+
+
+# p183  3.6.9   t분포
+"""
+    t분포 : 모집단 분포가 정규분포일 때 t값의 표본분포
+    
+    자유도 : 샘플사이즈가 N일 때 N-1로 계산한 값
+    t분포의 형태는 자유도에 따라 달라짐
+    자유도가 n일 경우 t분포는 t(n)으로 표기
+    
+    t분포의 평균값 = 0
+    t분포의 분산은 1보다 조금 크다
+    
+    t(n)의 분산(n이 2보다 클 때) = n / (n-2)
+    
+    자유도가 커질수록 분산은 1에 가까워지고, 표준정규분포와 거의 차이가 나지 않게 됨
+    반대로 말하면 샘플사이즈가 작아질 경우 차이가 커짐
+"""
+# t분포의 확률밀도와 표준정규분포의 확률밀도 겹쳐 표시
+plt.plot(x, stats.norm.pdf(x = x), color = "black", linestyle = "dotted")
+plt.plot(x, stats.t.pdf(x = x, df = 9), color = "black")
+# → 실선표시가 t분포인데, 밑단 쪽이 조금 더 넓은 분포라는 걸 알 수 있음
+# → 즉, 평균값과 크게 다른 데이터가 발생하기 쉬워짐
+
+# 표본에서 계산한 표준오차로 표준화된 표본평균의 분포와 t분포의 확률밀도 비교
+# 시뮬레이션의 결과와 겹치면 커널밀도추정의 결과와 거의 일치
+sns.distplot(t_value_array, color = "black", norm_hist = True)  # 표본에서 계산한 표준오차로 표준화된 표본평균의 분포
+plt.plot(x, stats.t.pdf(x = x, df = 9),
+         color = "black", linestyle = "dotted")     # t분포의 확률밀도
+"""
+    t분포의 의미 : 모분산을 모르는 상황에서도 표본평균의 분포에 대해 얘기할 수 있다
+"""
+
+
+# p184  3.7 추정
+"""
+    3.1 ~ 3.3 기술통계
+    3.4 ~ 3.6 추측통계
+"""
+# p185  3.7.1   분석 준비
+# 수치 계산에 사용하는 라이브러리
+import numpy as np
+import pandas as pd
+import scipy as sp
+from scipy import stats
+# 그래프를 그리기 위한 라이브러리
+from matplotlib import pyplot as plt
+import seaborn as sns
+sns.set()
+# 표시 자릿수 지정
+# %precision 3
+# 그래프를 주피터 노트북에 그리기 위한 설정
+# %matplotlib inline
+
+# 분석 대상 데이터 불러오기
+fish = pd.read_csv("source/sample/3-7-1-fish_length.csv")["length"]
+fish
+
+
+# p186  3.7.2   점추정
+"""
+    점추정 : 모수(모집단 분포의 파라미터)를 어느 1개의 값으로 추정하는 추정 방법
+            모평균을 추정하는 경우에는 표본평균을 추정값으로 사용함
+     결국 우리가 하는 것은 표본에서 평균값을 계산하는 것. 이것으로 추정 완료
+     여기서 표본평균을 사용해도 좋은 이유는 표본평균은 '불편성'과 '일치성'을 가지고 있는 통계량이기 때문       
+"""
+mu = sp.mean(fish)      # 표본평균 계산
+mu
+
+sigma_2 = sp.var(fish, ddof = 1)   # 모분산 추정(불편분산 사용)
+sigma_2
+
+
+# p186  3.7.3   구간추정
+"""
+    구간추정 : 추정값이 폭을 가지게 하는 추정 방법
+            추정값의 폭 계산에는 확률의 개념 사용
+            폭을 가지므로 추정오차 생김 → 추정오차가 작으면, 구간추정 폭이 좁아짐
+            샘플사이즈가 커져도 구간추정의 폭이 작아짐
+"""
+
+
+# p187  3.7.4   신뢰계수와 신뢰구간
+"""
+    신뢰계수 : 구간추정의 폭에 대한 신뢰 정도를 확률로 표현한 것 ex) 95%, 99%
+    신뢰구간 : 특정 신뢰계수를 만족하는 구간
+    
+    똑같은 데이터를 대상으로 했을 경우 신뢰계수가 클수록 신뢰구간의 폭이 넓어짐
+    신뢰할 수 있는 정도가 올라간다고 생각하면 아무래도 안전제일이기 때문에 폭이 넓어질 수 밖에 없음
+"""
+
+
+# p187  3.7.5   신뢰한계
+"""
+    신뢰한계 : 신뢰구간 하한값과 상한값. 각각 하측신뢰한계와 상측신뢰관계라고 함
+"""
+
+
+# p187  3.7.6   신뢰구간 계산 방법
+"""
+    '(표본평균 - 모평균) / 표준오차'로 계산한 t값은 t분포를 따름
+    구간추정을 할 때는 t분포의 퍼센트포인트(어떤 확률이 되는 기준점) 사용
+    ex) 신뢰계수를 95%라고 했을 때,
+        t분포를 따른다면 2.5%, 97.5% 지점을 계산함
+        t분포를 따르는 변수가 이 구간에 들어갈 확률은 95%라는 얘기가 되므로 이 구간을 사용하면 됨
+"""
+
+
+# p187  3.7.7   구간추정(실습)
+# 구간추정에 필요한 정보는 자유도(샘플사이즈-1), 표본평균, 표준오차 3가지
+df = len(fish) - 1      # 자유도(샘플사이즈-1)
+
+sigma = sp.std(fish, ddof = 1)
+se = sigma / sp.sqrt(len(fish))     # 표준오차
+
+# 신뢰구간 stats.t.interval 함수 이용
+# 신뢰계수 = alpha, 자유도 = df, 표본평균 = loc, 표준오차 = scale 지정
+interval = stats.t.interval(
+    alpha = 0.95, df = df, loc = mu, scale = se)
+interval    # (3.5970100568358245, 4.777068592173221) (하측신뢰관계, 상측신뢰관계)
+
+
+# p188  3.7.8   신뢰구간을 구하는 방법 상세 설명
+"""
+    1. 어떤 자유도를 가지는 t분포를 가지는 97.5% 지점 계산
+    1.1 t분포를 따르는 97.5% 지점을 t0.975라고 표기
+    1.2 t분포는 평균에 대해 좌우대칭이기 때문에 2.5% 지점은 -t0.975로 표기
+    1.3 t분포를 따르는 변수가 -t0.975 이상 t0.975 이하가 되는 확률이 95%이다.
+    1.3.1 이 때 95%가 신뢰계수가 된다.
+    2. 표본평균 -t0.975 * 표준오차가 하측신뢰관계
+    3. 표본평균 +t0.975 * 표준오차가 상측신뢰관계
+"""
+t_975 = stats.t.ppf(q = 0.975, df = df)     # 97.5% 지점      2.2621571627409915
+t_025 = stats.t.ppf(q = 0.025, df = df)     # 2.5%(-97.5%) 지점       -2.262157162740992
+
+lower = mu - t_975 * se     # 하측신뢰관계        3.5970100568358245
+upper = mu + t_975 * se     # 상측신뢰관계        4.777068592173221
+
+
+# p190  3.7.9   신뢰구간의 폭을 결정하는 요소
+# 표본의 분산 크기가 크다
+# → 데이터가 평균값에서 흩어져 있다
+# → 평균값을 신뢰할 수 없게 된다
+
+# 표본표준편차를 10배로 늘려서 95% 신뢰구간 계산
+se2 = (sigma*10) / sp.sqrt(len(fish))
+stats.t.interval(alpha = 0.95, df = df, loc = mu, scale = se2)  # (-1.7132533521824618, 10.087332001191509)
+# → 신뢰구간의 폭이 꽤 넓어짐
+# → 진짜 모평균이 어디 있는지 잘 모르게 된다
+
+# 반대로 샘플사이즈가 커지면 표본평균을 신뢰할 수 있게 되므로 신뢰구간이 좁아짐
+# 샘플사이즈가 커지면 자유도가 커지고 표준오차가 작아짐
+df2 = (len(fish)*10) - 1
+se3 = sigma / sp.sqrt(len(fish)*10)
+stats.t.interval(alpha = 0.95, df = df2, loc = mu, scale = se3) # (4.0233803082774395, 4.350698340731607)
+
+# 완전히 똑같은 데이터라고 해도 신뢰계수(95%)가 커질수록 안전해진다고 볼 수 있고, 신뢰구간의 폭이 넓어짐
+stats.t.interval(alpha = 0.95, df = df, loc = mu, scale = se)   # (3.5970100568358245, 4.777068592173221)
+stats.t.interval(alpha = 0.95, df = df, loc = mu, scale = se2)  # (-1.7132533521824618, 10.087332001191509)
+stats.t.interval(alpha = 0.95, df = df2, loc = mu, scale = se3) # (4.0233803082774395, 4.350698340731607)
+stats.t.interval(alpha = 0.99, df = df, loc = mu, scale = se)   # (3.3393979149413973, 5.034680734067649)
+
+
+# p191  3.7.10  구간추정 결과의 해석
+"""
+    신뢰계수 95%의 95%는 다음과 같이 얻을 수 있다.
+    01 : 원래 모집단 분포에서 표본 추출
+    02 : 이번에도 같은 방법으로 95% 신뢰구간 계산
+    03 : 이 시행을 여러 번 반복
+    04 : 모든 시행 중 원래 모집단이 신뢰구간에 포함되는 비율이 95%
+"""
+# 시뮬레이션(시행횟수 20,000번)
+# 95% 신뢰구간을 구하는 시행을 20,000번 시행
+# 신뢰구간이 모평균(4)을 포함하면 True
+be_included_array = np.zeros(20000, dtype = "bool")
+
+np.random.seed(1)
+norm_dist = stats.norm(loc = 4, scale = 0.8)
+for i in range(0, 20000):
+    sample = norm_dist.rvs(size = 10)
+    df = len(sample) - 1
+    mu = sp.mean(sample)
+    std = sp.std(sample, ddof = 1)
+    se = std / sp.sqrt(len(sample))
+    interval = stats.t.interval(0.95, df, mu, se)
+    if(interval[0] <= 4 and interval[1] >= 4):
+        be_included_array[i] = True
+
+sum(be_included_array) / len(be_included_array)     # 0.93855 (ddof = 0)
+sum(be_included_array) / len(be_included_array)
+# → 신뢰구간이 모평균(4)을 포함한 비율 0.948(ddof = 1)로 대략 95%
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
