@@ -4,6 +4,19 @@
 
 #####################################################################
 
+"""
+    3.1 ~ 3.3   기술통계
+    3.4 ~ 3.6   추측통계
+    3.7         추정
+    3.8 ~ 3.11  통계적가설검정
+"""
+
+# 에러 제거
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
+import pandas as pd
+
+
 import numpy as np
 import scipy as sp
 from scipy import stats     # 4분위수
@@ -29,6 +42,8 @@ fish_multi = pd.read_csv("source/sample/3-2-1-fish_multi.csv")
 shoes = pd.read_csv("source/sample/3-2-2-shoes.csv")
 cov_data = pd.read_csv("source/sample/3-2-3-cov.csv")
 fish_multi = pd.read_csv("source/sample/3-3-2-fish_multi_2.csv")
+junk_food = pd.read_csv("source/sample/3-8-1-junk-food-weight.csv")["weight"]
+paired_test_data = pd.read_csv("source/sample/3-9-1-paired-t-test.csv")
 
 #####################################################################
 
@@ -944,10 +959,6 @@ plt.plot(x, stats.t.pdf(x = x, df = 9),
 
 
 # p184  3.7 추정
-"""
-    3.1 ~ 3.3 기술통계
-    3.4 ~ 3.6 추측통계
-"""
 # p185  3.7.1   분석 준비
 # 수치 계산에 사용하는 라이브러리
 import numpy as np
@@ -975,11 +986,11 @@ fish
      결국 우리가 하는 것은 표본에서 평균값을 계산하는 것. 이것으로 추정 완료
      여기서 표본평균을 사용해도 좋은 이유는 표본평균은 '불편성'과 '일치성'을 가지고 있는 통계량이기 때문       
 """
-mu = sp.mean(fish)      # 표본평균 계산
-mu
+mu = sp.mean(fish)      # 표본평균 계산       4.187039324504523
+mu      # 4.187039324504523
 
 sigma_2 = sp.var(fish, ddof = 1)   # 모분산 추정(불편분산 사용)
-sigma_2
+sigma_2     # 0.6803017080832623
 
 
 # p186  3.7.3   구간추정
@@ -1098,19 +1109,208 @@ for i in range(0, 20000):
         be_included_array[i] = True
 
 sum(be_included_array) / len(be_included_array)     # 0.93855 (ddof = 0)
-sum(be_included_array) / len(be_included_array)
-# → 신뢰구간이 모평균(4)을 포함한 비율 0.948(ddof = 1)로 대략 95%
+sum(be_included_array) / len(be_included_array)     # → 신뢰구간이 모평균(4)을 포함한 비율 0.948(ddof = 1)로 대략 95%
 
 
+# p193  3.8 통계적가설검정
+# p193  3.8.1   통계적가설검정
+"""
+    통계적가설검정 : 표본을 사용해서 모집단에 관한 통계적인 판단을 내리는 방법
+"""
 
 
+# p193  3.8.2   1변량 데이터의 t검정
+"""
+    대상 : 평균값
+    판단하는 것 : 평균값이 어떤 값과 다른지 얘기할 수 있는지 여부
+"""
 
 
+# p194  3.8.3   유의미한 차이
 
 
+# p194  3.8.4   t검정: 직관적인 생각
+"""
+    50g과 의미있는 차이, 즉 유의미한 차이가 있다고 생각할 수 있는 조건
+    - 큰 샘플에서 조사했다 : 샘플사이즈가 크다
+    - 정밀한 저울로 측정했다 : 데이터의 흩어짐(분산)이 작다
+    - 중량의 평균값이 50g에서 크게 벗어난다 : 평균값의 차이가 크다
+    → t검정에서 이 3가지 조건을 만족했을 때 유의미한 차이가 있다고 판단할 수 있다
+"""
 
 
+# p194  3.8.5   평균값의 차이가 큰 것만으로는 유의미한 차이를 얻을 수 없다
 
+
+# p195  3.8.6   t값
+"""
+    t값 = (표본평균 - 비교대상값) / (표준편차 / root샘플사이즈)
+        = (표본평균 - 비교대상값) / 표준오차
+    t값은 절대값에 의미가 있다
+"""
+
+
+# p196  3.8.7   통계적가설검정의 틀: 귀무가설, 대립가설
+"""
+    귀무가설 : 기각 대상이 되는 첫번째 가설
+    대립가설 : 귀무가설과 대립되는 가설
+"""
+
+
+# p196  3.8.8   p값
+"""
+    p값 : 표본과 귀무가설 간의 모순을 나타내는 지표
+    p값이 작을수록 귀무가설과 표본이 모순된다고 생각할 수 있음
+    p값은 확률로 표현
+    p값과 신뢰구간 둘 다 완전히 같은 조건에서 몇 번이고 표본추출을 하고 t값 계산을 반복해서 구한 확률을 해석한다
+    (3.11절에서 추가 설명)
+"""
+
+
+# p196  3.8.9   유의수준
+"""
+    유의수준 : 귀무가설을 기각하는 기준이 되는 값(위험률)
+    p값이 유의수준을 밑돌면 귀무가설 기각
+"""
+
+
+# p197  3.8.10  t검정과 t분포의 관계
+
+
+# p197  3.8.11  단측검정과 양측검정
+"""
+    단측검정 : 봉지과자의 평균중량이 50g보다 작다(or 크다)는 것을 알아보는 검정 방법(50g보다 큰 지(작은 지)는 상정하지 않음)
+    양측검정 : 봉지과자의 평균중랴이 50g과 다르다는 것을 알아보는 검정 방법
+"""
+
+
+# p197  3.8.12  p값 계산 방법
+"""
+    p값 = (1 - α) * 2
+        α : 표본에서 계산한 t값을 t표본이라고 할 때,
+            t분포의 누적분포함수를 사용하면 모평균이 50이라고 가정했을 때 t값이 t표본보다 작을 확률
+            이 때의 확률을 α라고 부름
+        마지막에 *2를 한 것은 양측검정을 위함.
+        봉지과자의 평균중량이 50g과 다르다는 확률을 계산하려면 큰 경우와 작은 경우 2가지를 고려해야 하므로
+        (1-α)를 2배로 해야할 필요가 있다. 또한 단측검정의 경우 단순히 (1-α)가 p값이 됨
+"""
+
+
+# p198  3.8.13  t검정의 구현: 분석 준비
+# 수치 계산에 사용하는 라이브러리
+import numpy as np
+import pandas as pd
+import scipy as sp
+from scipy import stats
+# 그래프를 그리기 위한 라이브러리
+from matplotlib import pyplot as plt
+import seaborn as sns
+sns.set()
+# 표시 자릿수 지정
+# %precision 3
+# 그래프를 주피터 노트북에 그리기 위한 설정
+# %matplotlib inline
+
+# 데이터 불러오기
+junk_food = pd.read_csv("source/sample/3-8-1-junk-food-weight.csv")["weight"]   # 봉지과자 중량
+junk_food.head()
+
+# t검정 실시
+# 귀무가설 : 봉지과자의 평균중량은 50g이다.
+# 대립가설 : 봉지과자의 평균중량은 50g이 아니다.
+# 유의수준 5% → p값이 0.05보다 낮다면 귀무가설 기각(봉지과자 중량이 50g과 다르다)
+
+
+# p199  3.8.14  t검정의 구현: t값 계산
+# t값 = (표본평균 - 비교대상값) / 표준오차
+mu = sp.mean(junk_food)     # 표본평균      55.38496619666667
+df = len(junk_food) - 1     # 자유도       19
+se = sp.std(junk_food, ddof = 1) / sp.sqrt(len(junk_food))      # 표준오차      1.9579276805755885
+t_value = (mu - 50) / se        # t값    2.7503396831713434
+
+
+# p200  3.8.15  t검정의 구현: p값 계산(이론)
+"""
+    p값 복습
+    - t분포의 누적분포함수를 사용하면 모평균을 50이라고 가정했을 때,
+      t값이 t표본보다 작을 확률을 계산할 수 있음(이 확률을 α라고 함).
+      (1-α)를 구하면 모평균을 50이라고 가정했을 때, t값이 t표본보다 클 확률을 계산할 수 있고,
+      (1-α)가 작아지면 t값이 t표본보다 클 확률이 낮다(즉, t표본이 충분히 크다)
+      라는 말이 되어 유의미한 차이를 얻을 수 있게 된다.
+"""
+alpha = stats.t.cdf(t_value, df = df)
+(1 - alpha) * 2     # 양측검정      0.012725590012524268
+# → p값이 유의수준 0.05보다 작으므로 유의미한 차이가 있다고 볼 수 있음
+# → 즉, 봉지과자의 평균중량은 50g과 유의미하게 차이가 있다는 판단 가능
+
+stats.ttest_1samp(junk_food, 50)    # Ttest_1sampResult(statistic=2.750339683171343, pvalue=0.012725590012524182)
+
+
+# p201  3.8.16  시뮬레이션에 의한 p값 계산
+"""
+    p값 : 귀무가설이 옳다고 가정한 뒤 몇 번이고 표본추출을 하고
+        t값 계산을 반복했을 때 t표본과 같거나 그보다 큰 t값을 얻는 비율로 해석
+        양측검정의 경우 이 비율을 2배로 한 것이 p값
+        이 비율이 작은 경우 t표본을 넘을 일이 거의 없다.
+        다시 말해 t표본이 충분히 크다고 생각할 수 있어서 유의미한 차이를 얻을 수 있다고 판단
+"""
+size = len(junk_food)       # 샘플사이즈     20
+sigma = sp.std(junk_food, ddof = 1)     # 표준편차      8.756118777591022
+
+t_value_array = np.zeros(50000)     # 50000번 계산 t값 저장할 준비
+
+np.random.seed(1)
+norm_dist = stats.norm(loc = 50, scale = sigma)
+for i in range(0, 50000):
+    sample = norm_dist.rvs(size = size)
+    sample_mean = sp.mean(sample)
+    sample_std = sp.std(sample, ddof = 1)
+    sample_se = sample_std / sp.sqrt(size)
+    t_value_array[i] = (sample_mean - 50) / sample_se
+
+(sum(t_value_array > t_value) / 50000) * 2      # 0.01324
+# → 이론적으로 계산한 값과 거의 일치
+
+
+# p202  3.9 평균값의 차이 검정
+# p202  3.9.1   2집단 데이터에 대한 t검정
+# p203  3.9.2   대응표본 t검정
+# p203  3.9.3   분석준비
+# 수치 계산에 사용하는 라이브러리
+import numpy as np
+import pandas as pd
+import scipy as sp
+from scipy import stats
+# 그래프를 그리기 위한 라이브러리
+from matplotlib import pyplot as plt
+import seaborn as sns
+sns.set()
+# 표시 자릿수 지정
+# %precision 3
+# 그래프를 주피터 노트북에 그리기 위한 설정
+# %matplotlib inline
+
+# 데이터 불러오기
+paired_test_data = pd.read_csv("source/sample/3-9-1-paired-t-test.csv")
+print(paired_test_data)
+
+# t검정
+# 귀무가설 : 약을 먹기 전과 후의 체온이 변하지 않는다
+# 대립가설 : 약을 먹기 전과 후의 체온이 다르다
+
+
+# p204  3.9.4   대응표본 t검정(실습)
+# 약을 먹기 전과 후의 표본평균
+before = paired_test_data.query('medicine == "before"')["body_temperature"]
+after = paired_test_data.query('medicine == "after"')["body_temperature"]
+# 배열형으로 변환
+before = np.array(before)
+after = np.array(after)
+# 차이 계산
+diff = after - before
+
+# 차이값의 평균값이 0과 다른지 1집단 t검정
+stats.ttest_1samp(diff, 0)      # Ttest_1sampResult(statistic=2.901693483620596, pvalue=0.044043109730074276)
 
 
 
