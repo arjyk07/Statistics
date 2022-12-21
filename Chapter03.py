@@ -1383,7 +1383,24 @@ stats.ttest_ind(before, after, equal_var = False)   # Ttest_indResult(statistic=
 
 
 # p211  3.10.5  p값 계산
-# 수치 계산에 사용
+# 수치 계산에 사용하는 라이브러리
+import numpy as np
+import pandas as pd
+import scipy as sp
+from scipy import stats
+# 그래프를 그리기 위한 라이브러리
+from matplotlib import pyplot as plt
+import seaborn as sns
+sns.set()
+# 표시 자릿수 지정
+# %precision 3
+# 그래프를 주피터 노트북에 그리기 위한 설정
+# %matplotlib inline
+
+# 자유도가 1인 카이제곱 분포의 누적밀도함수를 사용해서 p값 계산
+1 - sp.stats.chi2.cdf(x = 6.667, df = 1)        # 0.009821437357809604
+# → p값이 0.05 작으므로 색에 따라 버튼을 클릭하는 것이 유의미하게 변한다고 판단 가능
+
 
 
 
